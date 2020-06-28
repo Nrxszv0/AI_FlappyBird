@@ -73,7 +73,7 @@ class Bird:
             elif self.img_count < self.ANIMATION_TIME*4:
                 #if less than 20 show second image
                 self.img = self.IMGS[1]
-            elif self.img_count < self.ANIMATION_TIME*4 + 1:
+            elif self.img_count == self.ANIMATION_TIME*4 + 1:
                 #if less than 20 restart and show first image
                 self.img = self.IMGS[0]
                 self.img_count = 0
@@ -84,7 +84,7 @@ class Bird:
                 self.img_count = self.ANIMATION_TIME*2 #Sets img count to 10 so it will not skip a frame.
 
             rotated_image = pygame.transform.rotate(self.img, self.tilt)  #rotate img for us
-            new_rect = rotated_image.get_rect(center=self.img.get_rect)(topleft = (self.x, self.y).center) #Rotate around center center
+            new_rect = rotated_image.get_rect(center=self.img.get_rect(topleft = (self.x, self.y)).center) #Rotate around center center
 
             win.blit(rotated_image, new_rect.topleft) #How to rotate image
 
@@ -99,14 +99,15 @@ def draw_window(win, bird):
 def main():
     bird = Bird(200,200) #takes starting position
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-    
+    clock = pygame.time.Clock()
     run = True
     while run:
+        clock.tick(30)
         for event in pygame.event.get():
             #When event happens check what it is. Event could be a mouse click
             if event.type == pygame.QUIT:
                 run = False #If red X is clicked then stop running 
-
+        bird.move()
         draw_window(win, bird)
     
     pygame.quit() #Quit game
