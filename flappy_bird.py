@@ -81,10 +81,10 @@ class Bird:
 
             if self.tilt <= -80:
                 self.img =self.IMGS[1] #If the bird is titlted and looking down then do not cycle through and keep image constant
-                self.img_count = self.ANIMATION_TIME**2 #Sets img count to 10 so it will not skip a frame.
+                self.img_count = self.ANIMATION_TIME*2 #Sets img count to 10 so it will not skip a frame.
 
             rotated_image = pygame.transform.rotate(self.img, self.tilt)  #rotate img for us
-            new_rect = rotated_image.get_rect(center=self.img.get_rect(topleft = (self.x, self.y)).center) #Rotate around center center
+            new_rect = rotated_image.get_rect(center=self.img.get_rect)(topleft = (self.x, self.y).center) #Rotate around center center
 
             win.blit(rotated_image, new_rect.topleft) #How to rotate image
 
@@ -99,14 +99,17 @@ def draw_window(win, bird):
 def main():
     bird = Bird(200,200) #takes starting position
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+    
     run = True
     while run:
         for event in pygame.event.get():
             #When event happens check what it is. Event could be a mouse click
             if event.type == pygame.QUIT:
                 run = False #If red X is clicked then stop running 
+
         draw_window(win, bird)
     
     pygame.quit() #Quit game
     quit() #quit program
+
 main()
