@@ -4,7 +4,7 @@ import random
 import time
 import pygame
 
-WIN_WIDTH = 600
+WIN_WIDTH = 500
 WIN_HEIGHT = 800
 
 BIRD_IMGS = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird1.png"))) , pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird2.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))]
@@ -77,6 +77,78 @@ class Bird:
     def get_mask(self):
         return pygame.mask.from_surface(self.img)
 
+class Pipe:
+    GAP = 200 #Space between pipes
+    VEL = 5 #speed pipes move to bird
+
+    def __init__(self,x):
+        self.x = x
+        self.height = 0
+
+        self.top = 0 #Where top part of pipe is drawn
+        self.bottom = 0 #Where bottom part of pipe is drawn
+        self.PIPE_TOP = pygame.transform.flip(PIPE_IMG, False, True) #Flipping pipe so it lookes upside down. # the top pipe is flipped
+        self.PIPE_BOTTOM = PIPE_IMG #Bottom pipe image does not need to be flipped
+
+        self.passed = False #Check if the bird has passed the pipe
+        self.set_height()
+
+    def set_height(self):
+        self.height = random.randrange(50, 450) #Random height between 50 and 450
+        self.top = self.height - self.PIPE_TOP.get_height() #Figure out top left position. Probably drawing in a negative location
+        self.bottom = self.height + self.GAP #Adds gap position to the height. 
+    
+    def move(self):
+        self.x -= self.VEL
+
+    def draw(self, win):
+        win.blit(self.PIPE_TOP, (self.x, self.top))#Draws top pipe at the x and top coordinates
+        win.blit(self.PIPE_BOTTOM, (self.x, self.bottom)) #Draws bottom pipe at the x and bottom coordinates
+
+    def collide(self, bird):
+        bird_mask = bird.get_mask()
+        top_mask = pygame.mask.from_surface(self.PIPE_TOP)
+        bottom_mask = pygame.mask.from_surface(self.PIPE_BOTTOM)
+
+        top_offset = (self.x - bird.x, self.top - round(bird.y)) # cant have decimal numbers so bird is rounded. 
+        bottom_offset = (self.x - bird.x, self.bottom - round(bird.y)) #no dedimals 
+        #Offsets are how far away the top left corners are from each other
+
+        b_point = bird_mask.overlap(bottom_mask, bottom_offset) # Check if masks collide. Find point of collision. If they don't collide then the overlap function will return none.
+        t_point = bird_mask.overlap(top_mask, top_offset)
+
+        if t_point or b_point:
+            #return true if bird collided with either tube
+            return True 
+        
+        return False
+
+class Base:
+    VEL = 5 #Needs to be the same as the pipe so it doesn't look like they are moving at different speeds
+    WIDTH = BASE_IMG.get_width() #Gets width of base image
+    IMG = BASE_IMG
+
+    def __init__(self, y):
+        self.y = y
+        self.x1 = 0
+        self.x2 = self.WIDTH
+    
+    def move(self):
+        self.x1 -= self.VEL
+        self.x2 -= self.VEL
+        #Moves the two bases at two velocities to the left.
+
+        if self.x1 + self.WIDTH < 0:
+            #Checks if the first base has gone of the screen and when it does it brings it behind the second base 
+            self.x1 = self.x2 + self.WIDTH
+
+        if self.x2 + self.WIDTH < 0:
+            #Checks if the second base has gone of the screen and when it does it brings it behind the first base 
+            self.x2 = self.x1 + self.WIDTH
+    def draw(self, win):
+        win.blit(self.IMG, (self.x1, self.y)) #Draws first base
+        win.blit(self.IMG, (self.x2, self.y)) #Draws second base
+
 def draw_window(win, bird):
     win.blit(BG_IMG, (0,0))
     bird.draw(win)
@@ -85,13 +157,14 @@ def draw_window(win, bird):
 def main():
     bird = Bird(200,200)
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
-
+    clock = pygame.time.Clock()
     run = True
     while run:
+        clock.tick(30) # ticks 30 times per second. 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
+        # bird.move()
         draw_window(win, bird)
     pygame.quit()
     quit()
